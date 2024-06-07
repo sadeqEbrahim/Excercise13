@@ -3,27 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Renewable Energy Data Input</title>
+    <title>Prediction Results</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>Enter Renewable Energy Data</h1>
-    <form action="/submit" method="post">
-        <label for="Type_of_Renewable_Energy">Type of Renewable Energy:</label><br>
-        <input type="text" id="Type_of_Renewable_Energy" name="Type_of_Renewable_Energy"><br><br>
-
-        <label for="Installed_Capacity_MW">Installed Capacity (MW):</label><br>
-        <input type="number" id="Installed_Capacity_MW" name="Installed_Capacity_MW"><br><br>
-
-        <label for="Energy_Production_MWh">Energy Production (MWh):</label><br>
-        <input type="number" id="Energy_Production_MWh" name="Energy_Production_MWh"><br><br>
-
-        <label for="Energy_Consumption_MWh">Energy Consumption (MWh):</label><br>
-        <input type="number" id="Energy_Consumption_MWh" name="Energy_Consumption_MWh"><br><br>
-
-        <label for="Energy_Storage_Capacity_MWh">Energy Storage Capacity (MWh):</label><br>
-        <input type="number" id="Energy_Storage_Capacity_MWh" name="Energy_Storage_Capacity_MWh"><br><br>
-
-        <input type="submit" value="Submit">
-    </form>
+    <h1>Prediction Results</h1>
+    <div>{{ submission | safe }}</div>
 </body>
 </html>
