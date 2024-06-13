@@ -3,7 +3,14 @@ This code is designed to cluster clients based on their bank transaction data us
 
 
 ### Running the Code
+## Running using ducker
+Pull and build the container image from GitHub 
+`docker pull ghcr.io/sadeqebrahim/myapp:latest`
+`docker run -d -p 8080:8080 ghcr.io/sadeqebrahim/myapp:latest`
+and then go to this localhost: http://localhost:8080/ 
 
+
+## Running using the notebook
 To run this code, follow these steps:
 
 1. **Set Up the Environment**: Ensure that you have a Python environment set up with the necessary libraries installed, including `pandas`, `scikit-learn`, `seaborn`, and `matplotlib`.
