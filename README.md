@@ -4,9 +4,12 @@ This code is designed to cluster clients based on their bank transaction data us
 
 ### Running the Code
 ## Running using ducker
-Pull and build the container image from GitHub 
+Pull and build the container image from GitHub on your command-line interpreter
+
 `docker pull ghcr.io/sadeqebrahim/myapp:latest`
+
 `docker run -d -p 8080:8080 ghcr.io/sadeqebrahim/myapp:latest`
+
 and then go to this localhost: http://localhost:8080/ 
 
 
