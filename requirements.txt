@@ -1,4 +1,5 @@
 scikit-learn
 Flask
 pandas
-xgboost
+matplotlib
+seaborn
