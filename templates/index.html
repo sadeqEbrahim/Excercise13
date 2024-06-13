@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prediction Results</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Cluster Plot</title>
 </head>
 <body>
-    <h1>Prediction Results</h1>
-    <div>{{ submission | safe }}</div>
+    <h1>Cluster Distribution</h1>
+    <img src="{{ url_for('static', filename='plot.png') }}" alt="Cluster Distribution Plot">
 </body>
 </html>
+
