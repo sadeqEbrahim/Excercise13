@@ -1,7 +1,7 @@
 from flask import Flask, render_template
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
-from sklearn.cluster import KMeans
+from sklearn.semi_supervised import LabelSpreading
 from matplotlib import pyplot as plt
 import seaborn as sns
 
@@ -45,13 +45,23 @@ def home():
     X_train_scaled = scaler.fit_transform(X_train.drop(columns=['client_id']))
     X_test_scaled = scaler.transform(X_test.drop(columns=['client_id']))
 
-    # Perform KMEAN clustering
-    kmeans = KMeans(n_clusters=4, random_state=42)
-    train['cluster'] = kmeans.fit_predict(X_train_scaled)
-    test['cluster'] = kmeans.predict(X_test_scaled)
+    # Semi-supervised clustering using Label Spreading with batch processing
+    batch_size = 1000
+    num_batches = len(X_train_scaled) // batch_size
 
-    # Prepare the file to be sent to the system
-    submission = pd.DataFrame({'client_id': test['client_id'], 'cluster': test['cluster']})
+    label_prop_model = LabelSpreading(kernel='rbf', gamma=0.25)
+
+    for i in range(num_batches):
+        start_idx = i * batch_size
+        end_idx = min((i + 1) * batch_size, len(X_train_scaled))
+        batch_X = X_train_scaled[start_idx:end_idx]
+        batch_y = train_target['bins'].iloc[start_idx:end_idx]
+        label_prop_model.fit(batch_X, batch_y)
+
+    test_clusters = label_prop_model.predict(X_test_scaled)
+    
+    # Prepare submission file
+    submission = pd.DataFrame({'client_id': test['client_id'], 'cluster': test_clusters})
     submission['cluster'].plot(kind='hist', bins=20, title='Cluster Distribution')
     plt.gca().spines[['top', 'right']].set_visible(False)
 
