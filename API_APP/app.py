@@ -1,23 +1,48 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, send_file, jsonify
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from sklearn.semi_supervised import LabelSpreading
 from matplotlib import pyplot as plt
 import seaborn as sns
+import os
 
 app = Flask(__name__)
 
+# Define the data path
+data_path = 'dataset/'
+
+# Load the datasets
+transactions_train = pd.read_csv(data_path + 'transactions_train.csv')
+train_target = pd.read_csv(data_path + 'train_target.csv')
+transactions_test = pd.read_csv(data_path + 'transactions_test.csv')
+test_id = pd.read_csv(data_path + 'test.csv')
+
 @app.route('/')
 def home():
-    # Define the data path
-    data_path = 'dataset/'
+    return render_template('index.html')
 
-    # Load the datasets
-    transactions_train = pd.read_csv(data_path + 'transactions_train.csv')
-    train_target = pd.read_csv(data_path + 'train_target.csv')
-    transactions_test = pd.read_csv(data_path + 'transactions_test.csv')
-    test_id = pd.read_csv(data_path + 'test.csv')
+@app.route('/data_shapes')
+def data_shapes():
+    shapes = {
+        'transactions_train': transactions_train.shape,
+        'train_target': train_target.shape,
+        'transactions_test': transactions_test.shape,
+        'test_id': test_id.shape
+    }
+    return jsonify(shapes)
 
+@app.route('/data_heads')
+def data_heads():
+    heads = {
+        'transactions_train': transactions_train.head().to_html(),
+        'train_target': train_target.head().to_html(),
+        'transactions_test': transactions_test.head().to_html(),
+        'test_id': test_id.head().to_html()
+    }
+    return jsonify(heads)
+
+@app.route('/run_model')
+def run_model():
     # Calculate the simplest aggregation signs for each client
     agg_features_train = transactions_train.groupby('client_id')['amount_rur'].agg(['sum', 'mean', 'std', 'min', 'max']).reset_index()
     agg_features_test = transactions_test.groupby('client_id')['amount_rur'].agg(['sum', 'mean', 'std', 'min', 'max']).reset_index()
@@ -66,10 +91,12 @@ def home():
     plt.gca().spines[['top', 'right']].set_visible(False)
 
     # Save the plot as an image
+    if not os.path.exists('static'):
+        os.makedirs('static')
     plt.savefig('static/plot.png')
+    plt.close()
 
-    # Render the HTML file
-    return render_template('index.html')
+    return send_file('static/plot.png', mimetype='image/png')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080, debug=True)

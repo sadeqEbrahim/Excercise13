@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Flask API Application</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            text-align: center;
+            font-family: Arial, sans-serif;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        #output, #plot-img {
+            margin: 20px auto;
+            width: 80%;
+        }
+        button {
+            display: inline-block;
+            margin: 10px;
+            padding: 15px 30px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #4CAF50;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>Fortune-telling on cards</h1>
+    <h2>It is possible to find out the age of the client based on information about his card expenses thanks to Sberbank who prepared the task based on real banking transactions. When improving its products, the bank uses information about users, including age. It helps to make personalized products that meet the real needs of customers.</h2>
+    <h1>Accurate predictions</h1>
+    <h2>Here we predict which age group the bank client falls into based on information about the bank's expenses. Train training data for feature building and model training, and test test data for validating algorithms are given. This is specially prepared and anonymized information on which models can be trained, while maintaining the complete security of real customer data. The solution to the problem is the prediction of algorithms based on test data.</h2>
+    <h2>You can access the information about the dataset and the predicted result by clicking on the appropriate button. Enjoy!</h2>
+    
+    <button id="shapes-btn">Show Data Shapes</button>
+    <button id="heads-btn">Show Data Heads</button>
+    <button id="run-model-btn">Run Model and Show Plot</button>
+    <div id="output"></div>
+    <img id="plot-img" src="" alt="Plot Image" style="display:none;">
+
+    <script>
+        $(document).ready(function() {
+            $('#shapes-btn').click(function() {
+                $.get('/data_shapes', function(data) {
+                    $('#output').html('<pre>' + JSON.stringify(data, null, 2) + '</pre>');
+                });
+            });
+
+            $('#heads-btn').click(function() {
+                $.get('/data_heads', function(data) {
+                    let headsHtml = '<p>client_id is a unique identifier of the client, corresponding to the client_id field of the transactions.</p>' +
+                                    '<p>trans_date is the date of the transaction.</p>' +
+                                    '<p>small_group - purchase category.</p>' +
+                                    '<p>amount_rur is the transaction amount.</p>' +
+                                    '<p>bins - the target variable to predict, this is the customer\'s age category.</p>';
+                    for (const [key, value] of Object.entries(data)) {
+                        headsHtml += '<h3>' + key + '</h3>' + value;
+                    }
+                    $('#output').html(headsHtml);
+                });
+            });
+
+            $('#run-model-btn').click(function() {
+                $.get('/run_model', function() {
+                    $('#plot-img').attr('src', 'static/plot.png').show();
+                    $('#output').html('<p>Customer\'s age category is represented by each bin. The higher the bin, the more frequency of transactions the age group makes.</p>');
+                });
+            });
+        });
+    </script>
+    <h2>Thank you for using our app. We hope it meets your expectations and provides valuable insights!</h2>
+</body>
+</html>
