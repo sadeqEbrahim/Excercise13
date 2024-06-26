@@ -15,19 +15,39 @@
             margin: 20px auto;
             width: 80%;
         }
-        button {
+        .button, label {
             display: inline-block;
             margin: 10px;
             padding: 15px 30px;
             font-size: 16px;
             color: #fff;
-            background-color: #4CAF50;
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            text-align: center;
+            width: 250px;  /* Ensuring all buttons have the same width */
         }
-        button:hover {
+        .button {
+            background-color: #4CAF50;
+        }
+        .button:hover {
             background-color: #45a049;
+        }
+        label {
+            background-color: #ff0000;
+        }
+        label:hover {
+            background-color: #cc0000;
+        }
+        input[type="file"] {
+            display: none;
+        }
+        .file-name {
+            display: inline-block;
+            margin-left: 10px;
+            vertical-align: middle;
+            font-size: 14px;
+            color: #333;
         }
     </style>
 </head>
@@ -38,14 +58,59 @@
     <h2>Here we predict which age group the bank client falls into based on information about the bank's expenses. Train training data for feature building and model training, and test test data for validating algorithms are given. This is specially prepared and anonymized information on which models can be trained, while maintaining the complete security of real customer data. The solution to the problem is the prediction of algorithms based on test data.</h2>
     <h2>You can access the information about the dataset and the predicted result by clicking on the appropriate button. Enjoy!</h2>
     
-    <button id="shapes-btn">Show Data Shapes</button>
-    <button id="heads-btn">Show Data Heads</button>
-    <button id="run-model-btn">Run Model and Show Plot</button>
+    <p>Please upload your CSV files for age prediction:</p>
+    <form id="upload-form" enctype="multipart/form-data">
+        <label for="transactions_train">Choose Transaction Train File</label>
+        <input type="file" name="transactions_train.csv" id="transactions_train" required>
+        <span id="transactions_train_name" class="file-name"></span><br>
+
+        <label for="train_target">Choose Train Target File</label>
+        <input type="file" name="train_target.csv" id="train_target" required>
+        <span id="train_target_name" class="file-name"></span><br>
+
+        <label for="transactions_test">Choose Transaction Test File</label>
+        <input type="file" name="transactions_test.csv" id="transactions_test" required>
+        <span id="transactions_test_name" class="file-name"></span><br>
+
+        <label for="test_id">Choose Test File</label>
+        <input type="file" name="test.csv" id="test_id" required>
+        <span id="test_id_name" class="file-name"></span><br>
+
+        <button type="submit" class="button">Upload Files</button>
+    </form>
+
+    <button id="shapes-btn" class="button" style="display:none;">Show Data Shapes</button>
+    <button id="heads-btn" class="button" style="display:none;">Show Data Heads</button>
+    <button id="run-model-btn" class="button" style="display:none;">Run Model and Show Plot</button>
     <div id="output"></div>
     <img id="plot-img" src="" alt="Plot Image" style="display:none;">
 
     <script>
         $(document).ready(function() {
+            $('#upload-form input[type="file"]').change(function() {
+                const fileName = $(this).prop('files')[0].name;
+                const labelId = '#' + $(this).attr('id') + '_name';
+                $(labelId).text(fileName);
+            });
+
+            $('#upload-form').on('submit', function(e) {
+                e.preventDefault();
+                var formData = new FormData(this);
+                $.ajax({
+                    url: '/upload',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(data) {
+                        alert(data.message);
+                        $('#shapes-btn').show();
+                        $('#heads-btn').show();
+                        $('#run-model-btn').show();
+                    }
+                });
+            });
+
             $('#shapes-btn').click(function() {
                 $.get('/data_shapes', function(data) {
                     $('#output').html('<pre>' + JSON.stringify(data, null, 2) + '</pre>');

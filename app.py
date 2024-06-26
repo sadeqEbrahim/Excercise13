@@ -1,4 +1,4 @@
-from flask import Flask, render_template, send_file, jsonify
+from flask import Flask, render_template, request, send_file, jsonify
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from sklearn.semi_supervised import LabelSpreading
@@ -8,21 +8,34 @@ import os
 
 app = Flask(__name__)
 
-# Define the data path
-data_path = 'dataset/'
+# Define the path for uploaded files
+UPLOAD_FOLDER = 'uploads/'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# Load the datasets
-transactions_train = pd.read_csv(data_path + 'transactions_train.csv')
-train_target = pd.read_csv(data_path + 'train_target.csv')
-transactions_test = pd.read_csv(data_path + 'transactions_test.csv')
-test_id = pd.read_csv(data_path + 'test.csv')
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+
+def load_uploaded_files():
+    transactions_train = pd.read_csv(os.path.join(app.config['UPLOAD_FOLDER'], 'transactions_train.csv'))
+    train_target = pd.read_csv(os.path.join(app.config['UPLOAD_FOLDER'], 'train_target.csv'))
+    transactions_test = pd.read_csv(os.path.join(app.config['UPLOAD_FOLDER'], 'transactions_test.csv'))
+    test_id = pd.read_csv(os.path.join(app.config['UPLOAD_FOLDER'], 'test.csv'))
+    return transactions_train, train_target, transactions_test, test_id
 
 @app.route('/')
 def home():
     return render_template('index.html')
 
+@app.route('/upload', methods=['POST'])
+def upload_files():
+    for key in request.files:
+        file = request.files[key]
+        file.save(os.path.join(app.config['UPLOAD_FOLDER'], file.filename))
+    return jsonify({'message': 'Files successfully uploaded'})
+
 @app.route('/data_shapes')
 def data_shapes():
+    transactions_train, train_target, transactions_test, test_id = load_uploaded_files()
     shapes = {
         'transactions_train': transactions_train.shape,
         'train_target': train_target.shape,
@@ -33,6 +46,7 @@ def data_shapes():
 
 @app.route('/data_heads')
 def data_heads():
+    transactions_train, train_target, transactions_test, test_id = load_uploaded_files()
     heads = {
         'transactions_train': transactions_train.head().to_html(),
         'train_target': train_target.head().to_html(),
@@ -43,6 +57,8 @@ def data_heads():
 
 @app.route('/run_model')
 def run_model():
+    transactions_train, train_target, transactions_test, test_id = load_uploaded_files()
+
     # Calculate the simplest aggregation signs for each client
     agg_features_train = transactions_train.groupby('client_id')['amount_rur'].agg(['sum', 'mean', 'std', 'min', 'max']).reset_index()
     agg_features_test = transactions_test.groupby('client_id')['amount_rur'].agg(['sum', 'mean', 'std', 'min', 'max']).reset_index()

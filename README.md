@@ -11,6 +11,12 @@ Pull and build the container image from GitHub on your command-line interpreter
 `docker run -d -p 8080:8080 ghcr.io/sadeqebrahim/myapp:latest`
 
 and then go to this localhost: http://localhost:8080/ 
+for the dataset, give the folder that consists of the four following files in csv:
+	transactions_train
+	transactions_test
+	train_target
+	test
+and run the program
 
 
 ## Running using the notebook
