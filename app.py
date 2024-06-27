@@ -5,15 +5,22 @@ from sklearn.semi_supervised import LabelSpreading
 from matplotlib import pyplot as plt
 import seaborn as sns
 import os
+import joblib
 
 app = Flask(__name__)
 
-# Define the path for uploaded files
+# Define the path for uploaded files and model
 UPLOAD_FOLDER = 'uploads/'
+MODEL_FOLDER = 'model/'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['MODEL_FOLDER'] = MODEL_FOLDER
 
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
+if not os.path.exists(MODEL_FOLDER):
+    os.makedirs(MODEL_FOLDER)
+
+MODEL_FILE = os.path.join(MODEL_FOLDER, 'label_spreading_model.pkl')
 
 def load_uploaded_files():
     transactions_train = pd.read_csv(os.path.join(app.config['UPLOAD_FOLDER'], 'transactions_train.csv'))
@@ -86,18 +93,25 @@ def run_model():
     X_train_scaled = scaler.fit_transform(X_train.drop(columns=['client_id']))
     X_test_scaled = scaler.transform(X_test.drop(columns=['client_id']))
 
-    # Semi-supervised clustering using Label Spreading with batch processing
-    batch_size = 1000
-    num_batches = len(X_train_scaled) // batch_size
+    if os.path.exists(MODEL_FILE):
+        # Load the model from the file
+        label_prop_model = joblib.load(MODEL_FILE)
+    else:
+        # Semi-supervised clustering using Label Spreading with batch processing
+        batch_size = 1000
+        num_batches = len(X_train_scaled) // batch_size
 
-    label_prop_model = LabelSpreading(kernel='rbf', gamma=0.25)
+        label_prop_model = LabelSpreading(kernel='rbf', gamma=0.25)
 
-    for i in range(num_batches):
-        start_idx = i * batch_size
-        end_idx = min((i + 1) * batch_size, len(X_train_scaled))
-        batch_X = X_train_scaled[start_idx:end_idx]
-        batch_y = train_target['bins'].iloc[start_idx:end_idx]
-        label_prop_model.fit(batch_X, batch_y)
+        for i in range(num_batches):
+            start_idx = i * batch_size
+            end_idx = min((i + 1) * batch_size, len(X_train_scaled))
+            batch_X = X_train_scaled[start_idx:end_idx]
+            batch_y = train_target['bins'].iloc[start_idx:end_idx]
+            label_prop_model.fit(batch_X, batch_y)
+
+        # Save the trained model to the file
+        joblib.dump(label_prop_model, MODEL_FILE)
 
     test_clusters = label_prop_model.predict(X_test_scaled)
     
